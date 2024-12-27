@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Services\SuperAdminService;
+use App\Http\Requests\SuperAdminRequest;
+
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Contracts\Validation\Validator;
+
 
 class SuperAdminController extends Controller
 {
@@ -16,35 +20,47 @@ class SuperAdminController extends Controller
         $this->superAdminService = $superAdminService;
     }
 
-    public function register(Request $request)
+    public function register(SuperAdminRequest $request)
     {
-        $request->validate([
-            'firstname' => 'required|string',
-            'lastname' => 'required|string',
-            'phone' => 'required|string|max:13',
-            'email' => 'required|string|email|unique:super_admins,email',
-            'password' => 'required|string|min:6',
-            'role' => 'required|string|in:merchant,superadmin,user',
-        ]);
+
 
         try {
             $admin = $this->superAdminService->registerSuperAdmin($request->all());
+
+if (!$admin) {
+    \Log::error('SuperAdmin registration failed.');
+    return response()->json(['message' => 'Registration failed'], 500);
+}
+
+// Registration successful
+\Log::info('SuperAdmin ID generated: ' . $admin->id);
+
             return response()->json([
                 'message' => 'SuperAdmin registered successfully',
                 'data' => $admin,
             ], 201);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle database-related errors
+            \Log::error('Database error during admin registration: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Database error',
+                'message' => $e->getMessage(),
+            ], 400);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Registration failed: ' . $e->getMessage()], 500);
+// Handle general errors
+\Log::error('Error during admin registration: ' . $e->getMessage());
+return response()->json([
+    'error' => 'An unexpected error occurred',
+    'message' => $e->getMessage(),
+], 500);
+
         }
     }
 
-    public function login(Request $request)
+    public function login(SuperAdminRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-            'role' => 'required|string|in:superadmin',
-        ]);
+
 
         try {
             $result = $this->superAdminService->authenticateSuperAdmin(
