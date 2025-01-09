@@ -35,53 +35,125 @@ class MerchantService
         }
     }
 
-    public function authenticateMerchant($phone, $password, $role)
-    {
-        \Log::info('Authenticating merchant with phone: ' . $phone . ' and role: ' . $role);
 
-        $merchant = $this->repository->findByPhoneAndRole($phone, $role);
+  public function authenticateMerchant($phone, $password, $role)
+{
+    \Log::info('Authenticating merchant with phone: ' . $phone . ' and role: ' . $role);
 
-        if (!$merchant) {
-            \Log::info('Merchant not found for phone: ' . $phone . ' and role: ' . $role);
-            return null;
-        }
+$merchant = $this->repository->findByPhoneAndRole($phone, $role);
 
-        if (Hash::check($password, $merchant->password)) {
-            $token = JWTAuth::fromUser($merchant);
-            \Log::info('Authentication successful for merchant ID: ' . $merchant->id);
-            return [
-                'merchant' => $merchant,
-                'token' => $token,
-            ];
-        }
 
-        \Log::info('Password mismatch for phone: ' . $phone);
-        return null;
+
+
+
+
+
+
+    if (!$merchant) {
+        \Log::info('Merchant not found for phone: ' . $phone . ' and role: ' . $role);
+        return [
+            'error' => 'Merchant not found with this phone',
+            'code' => 404,
+        ];
     }
 
-    public function getAuthenticatedMerchant($token)
+if (!Hash::check($password, $merchant->password)) {
+    \Log::info('Password mismatch for phone: ' . $phone);
+    return [
+        'error' => 'Invalid  password used ',
+        'code' => 401,
+    ];
+}
+
+$token = JWTAuth::fromUser($merchant);
+\Log::info('Authentication successful for merchant ID: ' . $merchant->id);
+
+
+
+
+
+
+
+
+    return [
+        'merchant' => $merchant,
+        'token' => $token,
+    ];
+}
+
+
+  public function getAuthenticatedMerchant($token)
     {
         try {
-            \Log::info('Authenticating token: ' . $token);
+$payload = JWTAuth::setToken($token)->getPayload();
+$userId = $payload->get('sub'); // Assuming 'sub' contains the user ID
+\Log::info('Looking for user with ID: ' . $userId . ' and Role: merchant');
 
-            $merchant = JWTAuth::setToken($token)->authenticate();
+
+
+$merchant = $this->repository->findById($userId);
+
 
             if (!$merchant) {
-                \Log::info('Merchant not found for token: ' . $token);
-                return response()->json(['message' => 'Merchant not found'], 404);
+\Log::error('Merchant not found with ID: ' . $userId);
+return null; // Return null if the SuperAdmin is not found
+
             }
 
-            \Log::info('Authenticated Merchant: ', ['id' => $merchant->id]);
             return $merchant;
-        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            \Log::error('Token is invalid: ' . $e->getMessage());
-            return response()->json(['message' => 'Token is invalid'], 401);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            \Log::error('Token has expired: ' . $e->getMessage());
-            return response()->json(['message' => 'Token has expired'], 401);
+            \Log::error('Token expired: ' . $e->getMessage());
+            throw $e;
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            \Log::error('Invalid token: ' . $e->getMessage());
+            throw $e;
         } catch (\Exception $e) {
-            \Log::error('An error occurred while authenticating merchant: ' . $e->getMessage());
-            return response()->json(['message' => 'An error occurred'], 500);
+            \Log::error('Unexpected error in token validation: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    // public function getAuthenticatedMerchant($token)
+    // {
+    //     try {
+    //         \Log::info('Authenticating token: ' . $token);
+
+    //         $merchant = JWTAuth::setToken($token)->authenticate();
+
+    //         if (!$merchant) {
+    //             \Log::info('Merchant not found for token: ' . $token);
+    //             return response()->json(['message' => 'Merchant not found'], 404);
+    //         }
+
+    //         \Log::info('Authenticated Merchant: ', ['id' => $merchant->id]);
+    //         return $merchant;
+    //     } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+    //         \Log::error('Token is invalid: ' . $e->getMessage());
+    //         return response()->json(['message' => 'Token is invalid'], 401);
+    //     } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+    //         \Log::error('Token has expired: ' . $e->getMessage());
+    //         return response()->json(['message' => 'Token has expired'], 401);
+    //     } catch (\Exception $e) {
+    //         \Log::error('An error occurred while authenticating merchant: ' . $e->getMessage());
+    //         return response()->json(['message' => 'An error occurred'], 500);
+    //     }
+    // }
+
+    public function updateMerchant($id, array $data){
+        try {
+            \Log::info('Updating merchant ID: '. $id.' with data: ', $data);
+            $merchant = $this->repository->findById($id);
+            if (!$merchant) {
+                \Log::info('Merchant not found with ID: '. $id);
+                return response()->json(['message' => 'Merchant not found'], 404);
+            }
+            $merchant->update($data);
+            \Log::info('Merchant updated successfully: ', ['id' => $merchant->id]);
+            return $merchant;
+        } catch (\Exception $e) {
+\Log::error('Error updating merchant: ' . $id . ' with data: ' . $e->getMessage());
+throw $e;
+
         }
     }
 

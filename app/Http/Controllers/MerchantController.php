@@ -64,23 +64,18 @@ class MerchantController extends Controller
         try {
             $validated = $request->validated();
 
-            // Extract individual parameters
             $phone = $validated['phone'];
             $password = $validated['password'];
             $role = $validated['role'];
 
-            // Call the service with extracted parameters
             $result = $this->merchantService->authenticateMerchant($phone, $password, $role);
 
-            if (!$result || !isset($result['token'], $result['merchant'])) {
-                \Log::info('Failed to generate token or retrieve merchant for provided credentials.');
-                return response()->json(['message' => 'Invalid credentials or role mismatch'], 401);
+            if (isset($result['error'])) {
+                return response()->json(['message' => $result['error']], $result['code']);
             }
 
             $merchant = $result['merchant'];
             $token = $result['token'];
-
-            \Log::info('Token generated successfully: ' . $token);
 
             return response()->json([
                 'message' => 'Logged in successfully',
@@ -96,39 +91,41 @@ class MerchantController extends Controller
                     'role' => $merchant->role,
                 ],
             ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation error: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Validation error',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-            \Log::error('JWTException encountered: ' . $e->getMessage());
-            return response()->json(['message' => 'Could not create token', 'error' => $e->getMessage()], 500);
+
         } catch (\Exception $e) {
-            \Log::error('General exception encountered: ' . $e->getMessage());
+\Log::error('Error during login: ' . $e->getMessage());
+
             return response()->json(['message' => 'An error occurred', 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function merchant(Request $request)
+
+
+
+
+       public function merchant(Request $request)
     {
         try {
             $token = $request->bearerToken();
 
             if (!$token) {
+\Log::error('Token not provided');
+
                 return response()->json(['message' => 'Token not provided'], 400);
             }
 
-            $merchant = $this->merchantService->getAuthenticatedMerchant($token);
+$merchant = $this->merchantService->getAuthenticatedMerchant($token);
+
+
+
 
             if (!$merchant) {
-                return response()->json(['message' => 'Authentication failed or user not found'], 401);
-            }
+\Log::error('Merchant not found after token validation');
 
-            if (!$merchant) {
                 return response()->json(['message' => 'Merchant not found'], 404);
             }
+
+\Log::info('Merchant successfully retrieved', ['id' => $merchant->id]);
 
             return response()->json([
                 'message' => 'Merchant retrieved successfully',
@@ -138,17 +135,25 @@ class MerchantController extends Controller
                     'lastname' => $merchant->lastname,
                     'phone' => $merchant->phone,
                     'email' => $merchant->email,
-                    'license' => $merchant->license,
-                    'tinnumber' => $merchant->tinnumber,
                     'role' => $merchant->role,
                 ],
             ], 200);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+\Log::error('Token expired: ' . $e->getMessage());
+
             return response()->json(['message' => 'Token has expired', 'error' => $e->getMessage()], 401);
         } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+\Log::error('Invalid token: ' . $e->getMessage());
+
             return response()->json(['message' => 'Invalid token', 'error' => $e->getMessage()], 401);
+
+        } catch (\Exception $e) {
+            \Log::error('Unexpected error: ' . $e->getMessage());
+            return response()->json(['message' => 'Unexpected error occurred'], 500);
         }
     }
+
+
 
     public function logout(Request $request)
     {
@@ -166,4 +171,52 @@ class MerchantController extends Controller
             return response()->json(['message' => 'Failed to logout', 'error' => $e->getMessage()], 500);
         }
     }
+
+    public function update(Request $request)
+    {
+        try {
+            $token = $request->bearerToken();
+
+            if (!$token) {
+                return response()->json(['message' => 'Token not provided'], 400);
+            }
+
+            $merchant = $this->merchantService->getAuthenticatedMerchant($token);
+
+            if (!$merchant) {
+                return response()->json(['message' => 'Authentication failed or merchant not found'], 401);
+            }
+
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'firstname' => 'nullable|string|max:255',
+                'lastname' => 'nullable|string|max:255',
+                'phone' => 'nullable|string|max:255',
+                'email' => 'nullable|string|email|max:255',
+                'license' => 'nullable|string|max:255',
+                'tinnumber' => 'nullable|string|max:255',
+            ]);
+
+            // Update merchant details
+            $updatedMerchant = $this->merchantService->updateMerchant($merchant['id'], $validatedData);
+
+            return response()->json([
+                'message' => 'Merchant updated successfully',
+                'data' => $updatedMerchant,
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error while updating merchant: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('An error occurred while updating the merchant: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while updating the merchant',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }

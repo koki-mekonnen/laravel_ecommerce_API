@@ -27,4 +27,8 @@ class MerchantRepository
     {
         return Merchant::find($id);
     }
+
+    public function update(array $data, $id){
+        return Merchant::where('id', $id)->update($data);
+    }
 }
