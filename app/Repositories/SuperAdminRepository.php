@@ -3,6 +3,8 @@
 namespace App\Repositories;
 
 use App\Models\SuperAdmin;
+use App\Models\Merchant;
+
 
 class SuperAdminRepository
 {
@@ -20,4 +22,23 @@ class SuperAdminRepository
     {
         return SuperAdmin::find($id);
     }
+
+    public function update(array $data, $id)
+    {
+        return SuperAdmin::where('id', $id)->update($data);
+    }
+
+ public function deleteMerchant($merchantId)
+{
+    // Use Eloquent to delete the merchant
+    $merchant = Merchant::find($merchantId);
+
+    if (!$merchant) {
+        \Log::info("Merchant not found with ID: {$merchantId}");
+        return false; // Or handle as required
+    }
+
+    return $merchant->delete();
+}
+
 }
