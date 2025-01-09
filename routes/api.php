@@ -1,41 +1,40 @@
 <?php
 
-use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\MerchantController;
 
+use App\Http\Controllers\SuperAdminController;
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-use App\Http\Middleware\EnsureTokenIsValid;
 
+
+// Register and Login Routes (No token required here)
 
 Route::controller(SuperAdminController::class)->group(function () {
 Route::post('/admin/register', 'register')->name('admin.register');
-Route::post('/admin/login', 'login')->name('admin.login');
 
+Route::post('/admin/login', 'login')->name('admin.login'); // No token check here
 
 });
-Route::post('/merchant/register', [MerchantController::class, 'register'])->name('merchant.register');
-Route::post('/merchant/login', [MerchantController::class, 'login'])->name('merchant.login');
-
-
-
 
 Route::controller(MerchantController::class)->group(function () {
-
-    // Route::post('/merchant/login', 'login');
-    Route::get('/merchant/all ', 'index');
+Route::post('/merchant/register', 'register')->name('merchant.register');
+Route::post('/merchant/login', 'login')->name('merchant.login'); // No token check here
+Route::get('/merchant/all', 'index');
 
 });
 
-Route::middleware(['auth:superadmin'])->group(function () {
-    Route::get('/admin/me ', [SuperAdminController::class, 'admin']);
+// Protected Routes (Require token validation)
+Route::middleware(['ensure.token.valid'])->group(function () {
+    // SuperAdmin Routes
+    Route::get('/admin/me', [SuperAdminController::class, 'admin'])->name('admin.admin');
+    Route::put('/admin/update', [SuperAdminController::class, 'update'])->name('admin.update');
     Route::post('/admin/logout', [SuperAdminController::class, 'logout']);
-});
+Route::delete('/admin/merchant/{merchantId}', [SuperAdminController::class, 'deleteMerchant'])->name('admin.merchantdelete');
 
-Route::middleware(['auth:merchant'])->group(function () {
-    Route::get('/merchant/me ', [MerchantController::class, 'merchant']);
+
+// Merchant Routes
+Route::get('/merchant/me', [MerchantController::class, 'merchant'])->name('merchant.merchant');
+Route::put('/merchant/update', [MerchantController::class, 'update'])->name('merchant.update');
+
     Route::post('/merchant/logout', [MerchantController::class, 'logout']);
 });
-
-
