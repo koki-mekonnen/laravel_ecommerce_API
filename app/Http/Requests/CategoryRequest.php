@@ -24,8 +24,8 @@ class CategoryRequest extends FormRequest
 
         if ($routeName === 'merchant.updatecategory') {
             return [
-                'categoryname' => 'required|string',
-                'categorytype' => 'required|string|unique:categories,category_type,NULL,id,owner_id,' . $this->owner_id,
+                'category_name' => 'string',
+                'category_type' => 'string|unique:categories,category_type,NULL,id,owner_id,' . $this->owner_id,
                 'owner_id' => 'string',
 
             ];

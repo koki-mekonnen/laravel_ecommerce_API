@@ -47,10 +47,13 @@ class CategoryRepository
             ->get();
     }
 
-    public function update(array $data, $id)
-    {
-        return Category::where('id', $id)->update($data);
-    }
+    public function update (array $data,$id)
+{
+    return Category::where('id', $id)->update($data);
+
+}
+
+
 
     public function delete($id)
     {
