@@ -85,19 +85,24 @@ class CategoryService
     public function updateCategory($id, array $data)
     {
         try {
-            \Log::info('Updating category ID: ' . $id . ' with data: ', $data);
+            \Log::info('Updating category ID here: ' . $id . ' with data: ', $data);
+
             $category = $this->repository->findById($id);
             if (!$category) {
                 \Log::info('Category not found with ID: ' . $id);
                 return response()->json(['message' => 'Category not found'], 404);
             }
+
             $category->update($data);
+
+// $updatedCategory = $this->repository->update($id, $data); // Update the category
+
             \Log::info('Category updated successfully: ', ['id' => $category->id]);
-            return $category;
+
+            return $category; // Return the updated model
         } catch (\Exception $e) {
             \Log::error('Error updating category: ' . $id . ' with data: ' . $e->getMessage());
             throw $e;
-
         }
     }
 

@@ -167,4 +167,63 @@ class CategoryController extends Controller
             ], 500);
         }
     }
+
+ public function update(Request $request, $categoryId)
+{
+    try {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            \Log::error('Token not provided');
+            return response()->json(['message' => 'Token not provided'], 400);
+        }
+
+        $merchant = $this->merchantService->getAuthenticatedMerchant($token);
+        if (!$merchant) {
+            \Log::error('Merchant not found');
+            return response()->json(['message' => 'Merchant not found'], 404);
+        }
+
+        // Use the authenticated merchant's ID as the owner_id
+        $ownerId = $merchant->id;
+
+        // Validate the incoming data
+        $validatedData = $request->validate([
+            'category_name' => 'nullable|string',
+            'category_type' => 'nullable|string|unique:categories,category_type,NULL,id,owner_id,' . $ownerId,
+        ]);
+
+        \Log::info("Validated data: ", $validatedData);
+
+        // Call the service to update the category
+        $category = $this->categoryService->updateCategory($categoryId, $validatedData);
+
+        if (!$category) {
+            \Log::error('Category not found with ID: ' . $categoryId);
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+
+        \Log::info('Category updated successfully', ['category_id' => $categoryId]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category updated successfully',
+            'data' => $category,
+        ], 200);
+
+    } catch (\Throwable $th) {
+        \Log::error('Error updating category: ' . $th->getMessage(), [
+            'category_id' => $categoryId,
+            'input_data' => $request->all(),
+        ]);
+
+        return response()->json([
+            'error' => 'An unexpected error occurred',
+            'message' => $th->getMessage(),
+        ], 500);
+    }
+}
+
+
+
 }

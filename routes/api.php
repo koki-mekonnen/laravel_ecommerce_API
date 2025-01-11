@@ -43,7 +43,8 @@ Route::post('/merchant/logout', [MerchantController::class, 'logout']);
 
 Route::post('/merchant/category', [CategoryController::class, 'store'])->name('merchant.createcategory');
 Route::get('/merchant/category', [CategoryController::class, 'index'])->name('merchant.getcategories');
-// Route::put('/merchant/category/{categoryId}', [CategoryController::class, 'update'])->name('merchant.updatecategory');
+Route::put('/merchant/category/{categoryId}', [CategoryController::class, 'update'])->name('merchant.updatecategory');
+
 Route::get('/merchant/category/categoryname', [CategoryController::class, 'getByCategoryName'])->name('merchant.getcategoriesbyname');
 Route::get('/merchant/category/categorytype', [CategoryController::class, 'getByCategoryType'])->name('merchant.getcategoriesbytype');
 
