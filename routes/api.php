@@ -4,6 +4,9 @@ use App\Http\Controllers\MerchantController;
 
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+
+
 
 
 use Illuminate\Support\Facades\Route;
@@ -47,5 +50,12 @@ Route::put('/merchant/category/{categoryId}', [CategoryController::class, 'updat
 
 Route::get('/merchant/category/categoryname', [CategoryController::class, 'getByCategoryName'])->name('merchant.getcategoriesbyname');
 Route::get('/merchant/category/categorytype', [CategoryController::class, 'getByCategoryType'])->name('merchant.getcategoriesbytype');
+
+Route::post('/merchant/product', [ProductController::class, 'store'])->name('merchant.createproduct');
+Route::get('/merchant/product', [ProductController::class, 'index'])->name('merchant.getproduct');
+Route::put('/merchant/product/{productId}', [ProductController::class, 'update'])->name('merchant.updateproduct');
+Route::get('/merchant/product/productname', [ProductController::class, 'getByProductName'])->name('merchant.getproductbyname');
+Route::get('/merchant/product/producttype', [ProductController::class, 'getByProductType'])->name('merchant.getproductbytype');
+Route::delete('/merchant/product/{productId}', [ProductController::class, 'delete'])->name('merchant.deleteproduct');
 
 });
