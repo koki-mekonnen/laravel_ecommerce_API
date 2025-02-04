@@ -49,6 +49,8 @@ class Product extends Model
         return $this->belongsTo(Merchant::class, 'owner_id', 'id');
     }
 
+
+
     /**
      * Relationship: Product belongs to a Category (via category_id).
      */

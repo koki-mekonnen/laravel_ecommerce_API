@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Repositories;
 
 use App\Models\Product;
@@ -33,6 +32,29 @@ class ProductRepository
         return Product::all();
     }
 
+    public function findWhere(array $data)
+    {
+        $query = Product::query();
+
+        foreach ($data as $field => $value) {
+            if (! empty($value)) {
+                if (is_numeric($value)) {
+                    $query->where($field, $value);
+                } elseif (is_string($value)) {
+                    $query->whereRaw("LOWER($field) = LOWER(?)", [$value]);
+                } else {
+                    $query->where($field, $value);
+                }
+            }
+        }
+
+        $existingProduct = $query->first();
+
+        \Log::info('Existing Product:', ['data' => $existingProduct]);
+
+        return $existingProduct;
+    }
+
     public function getByProductType($producttype, $merchantId)
     {
         return Product::where('product_type', $producttype)
@@ -50,7 +72,15 @@ class ProductRepository
 
     public function update(array $data, $id)
     {
-        return Product::where('id', $id)->update($data);
+        $product = Product::find($id);
+
+        if (! $product) {
+            throw new \Exception('Product not found.');
+        }
+
+        $product->update($data);
+
+        return $product;
 
     }
 

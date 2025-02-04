@@ -18,9 +18,21 @@ class ProductService
         \Log::info('Register Product data received', $data);
 
         try {
+
+            $existingProduct = $this->repository->findWhere($data);
+
+            if ($existingProduct) {
+                \Log::warning('Product already exists', [
+                    'id'           => $existingProduct->id,
+                    'product_name' => $existingProduct->product_name,
+                    'product_type' => $existingProduct->product_type,
+                ]);
+
+                throw new \Exception('Product already exists in the database.');
+            }
+
             $product = $this->repository->create($data);
 
-            // Log successful creation with product details
             \Log::info('Product successfully created', [
                 'id'           => $product->id,
                 'product_name' => $product->product_name,
@@ -84,9 +96,11 @@ class ProductService
     public function updateProduct($id, array $data)
     {
         try {
-            \Log::info('Updating product ID here: ' . $id . ' with data: ', $data);
+
+            \Log::info('Updating product with ID: ' . $id . ' and data: ', $data);
 
             $product = $this->repository->findById($id);
+
             if (! $product) {
                 \Log::info('Product not found with ID: ' . $id);
                 return response()->json(['message' => 'Product not found'], 404);
@@ -94,14 +108,17 @@ class ProductService
 
             $product->update($data);
 
-// $updatedProduct = $this->repository->update($id, $data); // Update the product
+            $product = $this->repository->findById($id);
 
             \Log::info('Product updated successfully: ', ['id' => $product->id]);
 
-            return $product; // Return the updated model
+            return response()->json($product, 200);
+
         } catch (\Exception $e) {
-            \Log::error('Error updating product: ' . $id . ' with data: ' . $e->getMessage());
-            throw $e;
+
+            \Log::error('Error updating product with ID: ' . $id . '. Exception: ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while updating the product.'], 500);
+
         }
     }
 

@@ -198,24 +198,63 @@ class ProductController extends Controller
                 return response()->json(['message' => 'Token not provided'], 400);
             }
 
+
             $merchant = $this->merchantService->getAuthenticatedMerchant($token);
+
             if (! $merchant) {
                 \Log::error('Merchant not found');
                 return response()->json(['message' => 'Merchant not found'], 404);
             }
 
-            // Use the authenticated merchant's ID as the owner_id
             $ownerId = $merchant->id;
 
-            // Validate the incoming data
             $validatedData = $request->validate([
-                'product_name' => 'nullable|string',
-                'product_type' => 'nullable|string|unique:categories,product_type,NULL,id,owner_id,' . $ownerId,
+                'product_name'        => 'sometimes|string|max:255',
+                'product_description' => 'sometimes|string',
+                'product_price'       => 'sometimes|numeric|min:0',
+                'discount'            => 'sometimes|numeric|min:0|max:100',
+                'product_size'        => 'sometimes|array',
+                'product_color'       => 'sometimes|array',
+                'product_image'       => 'sometimes|array',
+                'product_brand'       => 'sometimes|string|max:255',
+                'product_quantity'    => 'sometimes|integer|min:0',
+                'category_id'         => 'uuid|exists:categories,id',
+                'category_name'       => 'sometimes|string',
+                'category_type'       => 'sometimes|string',
+                'owner_id'            => 'uuid|exists:merchants,id',
             ]);
 
             \Log::info("Validated data: ", $validatedData);
 
-            // Call the service to update the product
+            if (isset($validatedData['category_name'])) {
+                $categories = $this->categoryService->getByCategoryName($validatedData['category_name'], $merchant->id);
+
+                if (! $categories || $categories->isEmpty()) {
+                    \Log::error('Category not found for name: ' . $validatedData['category_name']);
+                    return response()->json(['message' => 'Category not found for the given name'], 404);
+                }
+            }
+
+            $category = $this->categoryService->checkCategoryTypeandName(
+                $validatedData['category_name'] ?? null,
+                $validatedData['category_type'] ?? null,
+                $merchant->id
+            );
+
+            if (! $category || $category->isEmpty()) {
+                \Log::error('Category not found for name: ' . $validatedData['category_name'] . ' and type: ' . ($validatedData['category_type'] ?? 'N/A'));
+                return response()->json([
+                    'message' => 'Category not found for the given name and type',
+                ], 404);
+            }
+
+            \Log::info('Category ID found: ' . $category->first()->id);
+
+            $validatedData['category_id'] = $category->first()->id;
+            $validatedData['owner_id']    = $ownerId;
+
+            \Log::info('Data passed to product update: ', $validatedData);
+
             $product = $this->productService->updateProduct($productId, $validatedData);
 
             if (! $product) {
@@ -265,7 +304,7 @@ class ProductController extends Controller
 
             $product = $this->productService->deleteProduct($productId);
 
-            if (!$product) {
+            if (! $product) {
                 \Log::error('Product not found with ID: ' . $productId);
                 return response()->json(['message' => 'Product not found'], 404);
             }
