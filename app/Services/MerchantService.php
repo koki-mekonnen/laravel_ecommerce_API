@@ -21,7 +21,8 @@ class MerchantService
 
         try {
             $data['password'] = Hash::make($data['password']);
-            $data['role'] = 'merchant';
+$data['role'] = 'merchant';
+
 
             $merchant = $this->repository->create($data);
 
@@ -35,68 +36,55 @@ class MerchantService
         }
     }
 
-
-  public function authenticateMerchant($phone, $password, $role)
-{
-    \Log::info('Authenticating merchant with phone: ' . $phone . ' and role: ' . $role);
+    public function authenticateMerchant($phone, $password, $role)
+    {
+        \Log::info('Authenticating merchant with phone: ' . $phone . ' and role: ' . $role);
 
 $merchant = $this->repository->findByPhoneAndRole($phone, $role);
 
 
+        if (! $merchant) {
+            \Log::info('Merchant not found for phone: ' . $phone . ' and role: ' . $role);
+            return [
+                'error' => 'Merchant not found with this phone',
+                'code'  => 404,
+            ];
+        }
 
+        if (! Hash::check($password, $merchant->password)) {
+            \Log::info('Password mismatch for phone: ' . $phone);
+            return [
+                'error' => 'Invalid  password used ',
+                'code'  => 401,
+            ];
+        }
 
+$token = JWTAuth::customClaims(['ttl' => config('jwt.refresh_ttl')])->fromUser($merchant);
 
-
-
-
-    if (!$merchant) {
-        \Log::info('Merchant not found for phone: ' . $phone . ' and role: ' . $role);
-        return [
-            'error' => 'Merchant not found with this phone',
-            'code' => 404,
-        ];
-    }
-
-if (!Hash::check($password, $merchant->password)) {
-    \Log::info('Password mismatch for phone: ' . $phone);
-    return [
-        'error' => 'Invalid  password used ',
-        'code' => 401,
-    ];
-}
-
-$token = JWTAuth::fromUser($merchant);
 \Log::info('Authentication successful for merchant ID: ' . $merchant->id);
 
 
+        return [
+            'merchant' => $merchant,
+            'token'    => $token,
+        ];
+    }
 
-
-
-
-
-
-    return [
-        'merchant' => $merchant,
-        'token' => $token,
-    ];
-}
-
-
-  public function getAuthenticatedMerchant($token)
+    public function getAuthenticatedMerchant($token)
     {
         try {
 $payload = JWTAuth::setToken($token)->getPayload();
+
 $userId = $payload->get('sub'); // Assuming 'sub' contains the user ID
 \Log::info('Looking for user with ID: ' . $userId . ' and Role: merchant');
-
 
 
 $merchant = $this->repository->findById($userId);
 
 
-            if (!$merchant) {
-\Log::error('Merchant not found with ID: ' . $userId);
-return null; // Return null if the SuperAdmin is not found
+            if (! $merchant) {
+                \Log::error('Merchant not found with ID: ' . $userId);
+                return null; // Return null if the SuperAdmin is not found
 
             }
 
@@ -139,12 +127,14 @@ return null; // Return null if the SuperAdmin is not found
     //     }
     // }
 
-    public function updateMerchant($id, array $data){
+    public function updateMerchant($id, array $data)
+    {
         try {
-            \Log::info('Updating merchant ID: '. $id.' with data: ', $data);
+\Log::info('Updating merchant ID: ' . $id . ' with data: ', $data);
+
             $merchant = $this->repository->findById($id);
-            if (!$merchant) {
-                \Log::info('Merchant not found with ID: '. $id);
+            if (! $merchant) {
+                \Log::info('Merchant not found with ID: ' . $id);
                 return response()->json(['message' => 'Merchant not found'], 404);
             }
             $merchant->update($data);
@@ -153,6 +143,7 @@ return null; // Return null if the SuperAdmin is not found
         } catch (\Exception $e) {
 \Log::error('Error updating merchant: ' . $id . ' with data: ' . $e->getMessage());
 throw $e;
+
 
         }
     }

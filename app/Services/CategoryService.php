@@ -82,6 +82,26 @@ class CategoryService
         }
     }
 
+     public function checkCategoryTypeandName($categoryName,$categoryType, $merchantid)
+    {
+        try {
+            \Log::info('Getting category by name: ' . $categoryName);
+            $category = $this->repository->checkCategoryTypeandName($categoryName,$categoryType, $merchantid);
+            if (!$category) {
+                \Log::error('Category not found for name : ' . $categoryName . ' and type: ' . $categoryType);
+
+
+
+                return response()->json(['message' => 'Category not found'], 404);
+            }
+            return $category;
+        } catch (\Exception $e) {
+            \Log::error('Error getting category by name: ' . $categoryName . ': ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+
     public function updateCategory($id, array $data)
     {
         try {

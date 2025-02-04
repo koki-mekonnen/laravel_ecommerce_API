@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Repositories;
 
 use App\Models\Category;
@@ -32,9 +31,18 @@ class CategoryRepository
         return Category::all();
     }
 
+// public function getByCategoryType($categorytype, $merchantId)
+// {
+//     return Category::where('category_type', $categorytype)
+//         ->where('owner_id', $merchantId)
+//         ->get();
+
+// }
+
     public function getByCategoryType($categorytype, $merchantId)
     {
-        return Category::where('category_type', $categorytype)
+        return Category::with('products') // Eager load products
+            ->where('category_type', $categorytype)
             ->where('owner_id', $merchantId)
             ->get();
 
@@ -47,13 +55,20 @@ class CategoryRepository
             ->get();
     }
 
-    public function update (array $data,$id)
-{
-    return Category::where('id', $id)->update($data);
+    public function checkCategoryTypeandName($categoryName, $categoryType, $merchantid)
+    {
+        return Category::where('category_name', $categoryName)
+            ->where('category_type', $categoryType)
+            ->where('owner_id', $merchantid)
+            ->get();
 
-}
+    }
 
+    public function update(array $data, $id)
+    {
+        return Category::where('id', $id)->update($data);
 
+    }
 
     public function delete($id)
     {

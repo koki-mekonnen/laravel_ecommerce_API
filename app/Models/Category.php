@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class Category extends Authenticatable implements JWTSubject
 {
@@ -27,6 +29,11 @@ class Category extends Authenticatable implements JWTSubject
         'owner_id',
 
     ];
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'category_id', 'id');
+    }
 
     public $timestamps = true;
 
