@@ -61,6 +61,27 @@ class ProductService
         }
     }
 
+
+   public function getById($id){
+    try {
+        \Log::info('Getting product by ID: ' . $id);
+        $product = $this->repository->findById($id);
+
+        if (!$product) {
+            \Log::warning('Product not found with ID: ' . $id);
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        \Log::info('Product found: ' . json_encode($product));
+
+        return $product;
+    } catch (\Exception $e) {
+        \Log::error('Error getting product by ID: '. $id . ': ' . $e->getMessage());
+        throw $e;
+    }
+}
+
+
     public function getByProductName($productName, $merchantid)
     {
         try {
