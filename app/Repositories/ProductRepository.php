@@ -20,13 +20,17 @@ class ProductRepository
     public function create(array $data)
     {
         \Log::info('Data passed to Product::create', $data);
+
         return Product::create($data);
     }
 
-    public function findById($id)
-    {
-        return Product::find($id);
-    }
+   public function findById($id)
+{
+    $product = Product::find($id);
+    return $product;
+}
+
+
     public function all()
     {
         return Product::all();

@@ -5,6 +5,9 @@ use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+
+
 
 
 
@@ -28,13 +31,17 @@ Route::get('/merchant/all', 'index');
 
 });
 
-// Protected Routes (Require token validation)
-Route::middleware(['ensure.token.valid'])->group(function () {
+
+
+    // Protected Routes (Require token validation)
+    Route::middleware(['ensure.token.valid'])->group(function () {
     // SuperAdmin Routes
     Route::get('/admin/me', [SuperAdminController::class, 'admin'])->name('admin.admin');
     Route::put('/admin/update', [SuperAdminController::class, 'update'])->name('admin.update');
     Route::post('/admin/logout', [SuperAdminController::class, 'logout']);
-Route::delete('/admin/merchant/{merchantId}', [SuperAdminController::class, 'deleteMerchant'])->name('admin.merchantdelete');
+    Route::delete('/admin/merchant/{merchantId}', [SuperAdminController::class, 'deleteMerchant'])->name('admin.merchantdelete');
+
+
 
 
 // Merchant Routes
@@ -42,7 +49,6 @@ Route::get('/merchant/me', [MerchantController::class, 'merchant'])->name('merch
 Route::put('/merchant/update', [MerchantController::class, 'update'])->name('merchant.update');
 
 Route::post('/merchant/logout', [MerchantController::class, 'logout']);
-
 
 Route::post('/merchant/category', [CategoryController::class, 'store'])->name('merchant.createcategory');
 Route::get('/merchant/category', [CategoryController::class, 'index'])->name('merchant.getcategories');
@@ -58,4 +64,10 @@ Route::get('/merchant/product/productname', [ProductController::class, 'getByPro
 Route::get('/merchant/product/producttype', [ProductController::class, 'getByProductType'])->name('merchant.getproductbytype');
 Route::delete('/merchant/product/{productId}', [ProductController::class, 'delete'])->name('merchant.deleteproduct');
 
+
+});
+
+
+Route::controller(CartController::class)->group(function () {
+    Route::post('/cart/add/{productid}','addtocart')->name('user.addtocart');
 });
