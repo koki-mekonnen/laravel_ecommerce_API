@@ -24,5 +24,16 @@ class CartRepository
 
     }
 
+    public function updateCartItem($cartid,array $data){
+       $cart = Cart::findOrFail($cartid);
+       $cart->update($data);
+      return $cart;
+
+    }
+
+    public function deleteCartItem($cartid){
+       return Cart::destroy($cartid);
+
+    }
 
 }

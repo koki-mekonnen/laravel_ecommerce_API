@@ -58,6 +58,31 @@ $cartItem = $this->repository->findCartItem($productid, $ownerid, $userid);
         }
     }
 
+    public function updateCartItem($cartid,$data){
+        try {
 
+            $cartItem = $this->repository->updateCartItem($cartid,$data);
+            if (! $cartItem) {
+                return null;
+            }
+            return $cartItem;
+        } catch (\Exception $e) {
+            \Log::error('Error updating cart item: '. $e->getMessage());
+            throw $e;
+        }
+    }
+
+
+    public function deleteCartItem($cartid){
+        try {
+
+            $this->repository->deleteCartItem($cartid);
+            \Log::info('Cart item deleted successfully: ', ['id' => $cartid]);
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Error deleting cart item: '. $e->getMessage());
+            throw $e;
+        }
+    }
 
 }

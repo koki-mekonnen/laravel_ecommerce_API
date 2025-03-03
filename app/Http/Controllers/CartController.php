@@ -1,16 +1,12 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Services\CartService;
-
 use App\Services\CategoryService;
-use App\Services\ProductService;
-
 use App\Services\MerchantService;
+use App\Services\ProductService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-
 
 class CartController extends Controller
 {
@@ -24,10 +20,9 @@ class CartController extends Controller
         $this->merchantService = $merchantService;
         $this->productService  = $productService;
         $this->categoryService = $categoryService;
-$this->cartService = $cartService;
+        $this->cartService     = $cartService;
 
-
-$this->userService = $userService;
+        $this->userService = $userService;
 
     }
 
@@ -36,70 +31,44 @@ $this->userService = $userService;
 
         try {
 
-$token = $request->bearerToken();
+            $token = $request->bearerToken();
 
-if (! $token) {
-    return response()->json(['message' => 'Token not provided'], 400);
-}
+            if (! $token) {
+                return response()->json(['message' => 'Token not provided'], 400);
+            }
 
-$user = $this->userService->getAuthenticatedUser($token);
+            $user = $this->userService->getAuthenticatedUser($token);
 
-if (! $user) {
-    return response()->json(['message' => 'Authentication failed or user not found'], 401);
-}
+            if (! $user) {
+                return response()->json(['message' => 'Authentication failed or user not found'], 401);
+            }
 
-$data = $request->validate([
-    'quantity' => 'required|integer|min:1',
-]);
-
-
-
-
+            $data = $request->validate([
+                'quantity' => 'required|integer|min:1',
+            ]);
 
 // Fetch the product details
-$product = $this->productService->getById($productid);
+            $product = $this->productService->getById($productid);
 
+            if (! $product) {
+                return response()->json(['message' => 'Product not found'], 404);
+            }
 
-
-if (! $product) {
-    return response()->json(['message' => 'Product not found'], 404);
-}
-
-
-
-
-
-\Log::info('Product found: ' . json_encode($product));
-
-
-
-
+            \Log::info('Product found: ' . json_encode($product));
 
 // Check if the product is already in the cart
 
-
-$cartItem = $this->cartService->findCartItem($product->id, $product->owner_id, $user->id);
-
-
-
+            $cartItem = $this->cartService->findCartItem($product->id, $product->owner_id, $user->id);
 
             if ($cartItem) {
 
-if (($cartItem->amount + $data['quantity']) > $product->product_quantity) {
-    return response()->json(['message' => 'Requested quantity exceeds available stock'], 400);
-}
+                if (($cartItem->amount + $data['quantity']) > $product->product_quantity) {
+                    return response()->json(['message' => 'Requested quantity exceeds available stock'], 400);
+                }
 
-
-
-
-
-$cartItem->amount += $data['quantity'];
-$cartItem->totalprice = $cartItem->product_price * $cartItem->amount;
-$cartItem->save();
-
-
-
-
+                $cartItem->amount += $data['quantity'];
+                $cartItem->totalprice = $cartItem->product_price * $cartItem->amount;
+                $cartItem->save();
 
                 return response()->json([
                     'success' => true,
@@ -108,13 +77,9 @@ $cartItem->save();
                 ], 200);
             }
 
-if ($data['quantity'] > $product->product_quantity) {
-    return response()->json(['message' => 'Requested quantity exceeds available stock'], 400);
-}
-
-
-
-
+            if ($data['quantity'] > $product->product_quantity) {
+                return response()->json(['message' => 'Requested quantity exceeds available stock'], 400);
+            }
 
             // Prepare cart data
             $cartData = [
@@ -139,21 +104,13 @@ if ($data['quantity'] > $product->product_quantity) {
             ];
 
 // Add to cart using CartService
-$cartItem = $this->cartService->addtoCart($cartData);
+            $cartItem = $this->cartService->addtoCart($cartData);
 
-
-
-
-
-return response()->json([
-    'success' => true,
-    'message' => 'Product added to cart successfully',
-    'data'    => $cartItem,
-], 201);
-
-
-
-
+            return response()->json([
+                'success' => true,
+                'message' => 'Product added to cart successfully',
+                'data'    => $cartItem,
+            ], 201);
 
         } catch (\Exception $e) {
             \Log::error('Error during add to cart: ' . $e->getMessage());
@@ -188,6 +145,112 @@ return response()->json([
 
         } catch (\Exception $e) {
             \Log::error('Error during fetch from cart: ' . $e->getMessage());
+            return response()->json([
+                'error'   => 'An unexpected error occurred',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updatecart(Request $request, $productid, $cartid)
+    {
+
+        try {
+
+            $token = $request->bearertoken();
+            if (! $token) {
+                return response()->json(['message' => 'Token not provided'], 400);
+            }
+
+            $user = $this->userService->getAuthenticatedUser($token);
+
+            if (! $user) {
+                return response()->json(['message' => 'Authentication failed or user not found'], 401);
+            }
+
+            $product = $this->productService->getById($productid);
+
+            if (! $product) {
+                return response()->json(['message' => 'Product not found'], 404);
+            }
+
+            $data = $request->validate([
+                'quantity' => 'required|integer|min:1',
+            ]);
+
+            $cartItem = $this->cartService->findCartItem($product->id, $product->owner_id, $user->id);
+
+            if (! $cartItem) {
+                return response()->json(['message' => 'Cart item not found'], 404);
+            }
+
+            if ($data['quantity'] > $product->product_quantity) {
+                return response()->json(['message' => 'Requested quantity exceeds available stock'], 400);
+            }
+
+            $cartData = [
+
+                'product_quantity' => $data['quantity'],
+                'amount'           => $data['quantity'],
+                'totalprice'       => $product->product_price * $data['quantity'],
+                'status'           => 'active',
+
+            ];
+
+            $updatedcartitem = $this->cartService->updateCartItem($cartid, $cartData);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $updatedcartitem,
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('Error during update on cart: ' . $e->getMessage());
+            return response()->json([
+                'error'   => 'An unexpected error occurred',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+
+    }
+
+
+    public function removefromcart(Request $request,$productid, $cartid){
+        try {
+            $token = $request->bearerToken();
+
+            if (! $token) {
+                return response()->json(['message' => 'Token not provided'], 400);
+            }
+
+            $user = $this->userService->getAuthenticatedUser($token);
+
+            if (! $user) {
+                return response()->json(['message' => 'Authentication failed or user not found'], 401);
+            }
+
+           $product = $this->productService->getById($productid);
+
+         if (! $product) {
+        return response()->json(['message' => 'Product not found'], 404);
+  }
+
+         $cartItem = $this->cartService->findCartItem($product->id, $product->owner_id, $user->id);
+            if (! $cartItem) {
+                return response()->json(['message' => 'Cart item not found'], 404);
+            }
+
+
+            $cart = $this->cartService->deleteCartItem($cartid);
+
+            $cartItem->delete();
+
+            return response()->json([
+               'success' => true,
+               'message' => 'Cart item removed successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Error during delete: ' . $e->getMessage());
             return response()->json([
                 'error'   => 'An unexpected error occurred',
                 'message' => $e->getMessage(),

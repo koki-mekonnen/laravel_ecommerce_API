@@ -82,6 +82,9 @@ Route::get('/user', [UserController::class, 'user'])->name('user.getuser');
 Route::patch('/user/update', [UserController::class, 'update'])->name('user.updateuser');
 Route::post('/cart/add/{productid}', [CartController::class, 'addtocart'])->name('cart.addtocart');
 Route::get('/cart/items', [CartController::class, 'viewcart'])->name('cart.viewcart');
+Route::patch('/cart/update/{productid}/{cartid}', [CartController::class, 'updatecart'])->name('cart.updatecart');
+Route::delete('/cart/remove/{productid}/{cartid}', [CartController::class, 'removefromcart'])->name('cart.removefromcart');
+
 
 
 
