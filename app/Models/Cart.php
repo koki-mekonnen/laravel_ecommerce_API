@@ -30,6 +30,7 @@ class Cart extends Model
         'category_type',
         'cart_id',
         'product_id',
+        'user_id',
         'amount',
         'totalprice',
         'status',
@@ -61,6 +62,11 @@ class Cart extends Model
     {
         return $this->belongsTo(Merchant::class, 'owner_id', 'id');
     }
+
+    public function user(){
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
 
     public function category()
     {

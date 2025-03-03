@@ -12,10 +12,28 @@ class CartRepository
         return Cart::create($data);
     }
 
-    public function findCartItem($productid,$ownerid){
+    public function findCartItem($productid,$ownerid,$userid){
 
-        return Cart::where('product_id', $productid)->where('owner_id', $ownerid)->first();
+    return Cart::where('product_id', $productid)->where('owner_id', $ownerid)->where('user_id', $userid)->first();
+
     }
 
+    public function getCartItems($userid){
+
+     return Cart::where('user_id', $userid)->get();
+
+    }
+
+    public function updateCartItem($cartid,array $data){
+       $cart = Cart::findOrFail($cartid);
+       $cart->update($data);
+      return $cart;
+
+    }
+
+    public function deleteCartItem($cartid){
+       return Cart::destroy($cartid);
+
+    }
 
 }

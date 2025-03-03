@@ -1,55 +1,49 @@
 <?php
+
 namespace App\Http\Controllers;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterMerchantRequest;
-use App\Models\Merchant;
-use App\Services\MerchantService;
+use App\Services\UserService;
+use App\Http\Requests\UserRequest;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Exceptions\JWTException;
 
-class MerchantController extends Controller
+class UserController extends Controller
 {
-    protected $merchantService;
+     protected $userService;
 
-    public function __construct(MerchantService $merchantService)
+    public function __construct(UserService $userService)
     {
-        $this->merchantService = $merchantService;
+        $this->userService = $userService;
     }
 
     public function index()
     {
-        $merchants = Merchant::all();
-        return response()->json(['data' => $merchants], 200);
+        $users = User::all();
+        return response()->json(['data' => $users], 200);
     }
 
-    public function register(RegisterMerchantRequest $request)
+    public function register(UserRequest $request)
     {
 
         try {
-            $merchant = $this->merchantService->registerMerchant($request->validated());
+            $user = $this->userService->registerUser($request->validated());
 
-            if (! $merchant) {
-                \Log::error('Merchant registration failed.');
+            if (! $user) {
+                \Log::error('User registration failed.');
                 return response()->json(['message' => 'Registration failed'], 500);
             }
 
-            // Registration successful
-            \Log::info('Merchant registered successfully.', ['id' => $merchant->id]);
+            \Log::info('User registered successfully.', ['id' => $user->id]);
             return response()->json([
-                'message' => 'Merchant registered successfully',
-                'data'    => $merchant,
+                'message' => 'User registered successfully',
+                'data'    => $user,
             ], 201);
         } catch (\Illuminate\Database\QueryException $e) {
-            // Handle database-related errors
-            \Log::error('Database error during merchant registration: ' . $e->getMessage());
+            \Log::error('Database error during user registration: ' . $e->getMessage());
             return response()->json([
                 'error'   => 'Database error',
                 'message' => $e->getMessage(),
             ], 400);
         } catch (\Exception $e) {
-            // Handle general errors
-            \Log::error('Error during merchant registration: ' . $e->getMessage());
+            \Log::error('Error during user registration: ' . $e->getMessage());
             return response()->json([
                 'error'   => 'An unexpected error occurred',
                 'message' => $e->getMessage(),
@@ -58,7 +52,7 @@ class MerchantController extends Controller
 
     }
 
-    public function login(RegisterMerchantRequest $request)
+    public function login(UserRequest $request)
     {
         try {
             $validated = $request->validated();
@@ -67,27 +61,25 @@ class MerchantController extends Controller
             $password = $validated['password'];
             $role     = $validated['role'];
 
-            $result = $this->merchantService->authenticateMerchant($phone, $password, $role);
+            $result = $this->userService->authenticateUser($phone, $password, $role);
 
             if (isset($result['error'])) {
                 return response()->json(['message' => $result['error']], $result['code']);
             }
 
-            $merchant = $result['merchant'];
+            $user = $result['user'];
             $token    = $result['token'];
 
             return response()->json([
                 'message' => 'Logged in successfully',
                 'token'   => $token,
                 'data'    => [
-                    'id'        => $merchant->id,
-                    'firstname' => $merchant->firstname,
-                    'lastname'  => $merchant->lastname,
-                    'phone'     => $merchant->phone,
-                    'email'     => $merchant->email,
-                    'license'   => $merchant->license,
-                    'tinnumber' => $merchant->tinnumber,
-                    'role'      => $merchant->role,
+                    'id'        => $user->id,
+                    'firstname' => $user->firstname,
+                    'lastname'  => $user->lastname,
+                    'phone'     => $user->phone,
+                    'email'     => $user->email,
+                    'role'      => $user->role,
                 ],
             ], 200);
 
@@ -98,7 +90,7 @@ class MerchantController extends Controller
         }
     }
 
-    public function merchant(Request $request)
+    public function user(Request $request)
     {
         try {
             $token = $request->bearerToken();
@@ -109,25 +101,25 @@ class MerchantController extends Controller
                 return response()->json(['message' => 'Token not provided'], 400);
             }
 
-            $merchant = $this->merchantService->getAuthenticatedMerchant($token);
+            $user = $this->userService->getAuthenticatedUser($token);
 
-            if (! $merchant) {
-                \Log::error('Merchant not found after token validation');
+            if (! $user) {
+                \Log::error('User not found after token validation');
 
-                return response()->json(['message' => 'Merchant not found'], 404);
+                return response()->json(['message' => 'User not found'], 404);
             }
 
-            \Log::info('Merchant successfully retrieved', ['id' => $merchant->id]);
+            \Log::info('User successfully retrieved', ['id' => $user->id]);
 
             return response()->json([
-                'message' => 'Merchant retrieved successfully',
+                'message' => 'User retrieved successfully',
                 'data'    => [
-                    'id'        => $merchant->id,
-                    'firstname' => $merchant->firstname,
-                    'lastname'  => $merchant->lastname,
-                    'phone'     => $merchant->phone,
-                    'email'     => $merchant->email,
-                    'role'      => $merchant->role,
+                    'id'        => $user->id,
+                    'firstname' => $user->firstname,
+                    'lastname'  => $user->lastname,
+                    'phone'     => $user->phone,
+                    'email'     => $user->email,
+                    'role'      => $user->role,
                 ],
             ], 200);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
@@ -154,7 +146,7 @@ class MerchantController extends Controller
                 return response()->json(['message' => 'Token not provided'], 400);
             }
 
-            $this->merchantService->logout($token);
+            $this->userService->logout($token);
 
             return response()->json(['message' => 'Successfully logged out'], 200);
         } catch (JWTException $e) {
@@ -171,42 +163,39 @@ class MerchantController extends Controller
                 return response()->json(['message' => 'Token not provided'], 400);
             }
 
-            $merchant = $this->merchantService->getAuthenticatedMerchant($token);
+            $user = $this->userService->getAuthenticatedUser($token);
 
-            if (! $merchant) {
-                return response()->json(['message' => 'Authentication failed or merchant not found'], 401);
+            if (! $user) {
+                return response()->json(['message' => 'Authentication failed or user not found'], 401);
             }
 
-            // Validate incoming request data
             $validatedData = $request->validate([
                 'firstname' => 'nullable|string|max:255',
                 'lastname'  => 'nullable|string|max:255',
                 'phone'     => 'nullable|string|max:255',
                 'email'     => 'nullable|string|email|max:255',
-                'license'   => 'nullable|string|max:255',
-                'tinnumber' => 'nullable|string|max:255',
+               'password' => 'nullable|string|max:255',
             ]);
 
-            // Update merchant details
-            $updatedMerchant = $this->merchantService->updateMerchant($merchant['id'], $validatedData);
-
+            $updatedUser = $this->userService->updateUser($user['id'], $validatedData);
             return response()->json([
-                'message' => 'Merchant updated successfully',
-                'data'    => $updatedMerchant,
+                'message' => 'User updated successfully',
+                'data'    => $updatedUser,
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation error while updating merchant: ' . $e->getMessage());
+            \Log::error('Validation error while updating user: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Validation error',
                 'errors'  => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('An error occurred while updating the merchant: ' . $e->getMessage());
+            \Log::error('An error occurred while updating the user: ' . $e->getMessage());
             return response()->json([
-                'message' => 'An error occurred while updating the merchant',
+                'message' => 'An error occurred while updating the user',
                 'error'   => $e->getMessage(),
             ], 500);
         }
     }
 
 }
+

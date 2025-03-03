@@ -29,10 +29,11 @@ class CartService
     }
 
 
-    public function findCartItem($productid, $ownerid){
+    public function findCartItem($productid, $ownerid,$userid){
         try {
 
-            $cartItem = $this->repository->findCartItem($productid, $ownerid);
+$cartItem = $this->repository->findCartItem($productid, $ownerid, $userid);
+
             if (! $cartItem) {
                 return null;
             }
@@ -43,7 +44,45 @@ class CartService
         }
     }
 
+    public function getCartItems($userid){
+        try {
+
+            $cart = $this->repository->getCartItems($userid);
+            if (! $cart) {
+                return null;
+            }
+            return $cart;
+        } catch (\Exception $e) {
+            \Log::error('Error getting cart: '. $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function updateCartItem($cartid,$data){
+        try {
+
+            $cartItem = $this->repository->updateCartItem($cartid,$data);
+            if (! $cartItem) {
+                return null;
+            }
+            return $cartItem;
+        } catch (\Exception $e) {
+            \Log::error('Error updating cart item: '. $e->getMessage());
+            throw $e;
+        }
+    }
 
 
+    public function deleteCartItem($cartid){
+        try {
+
+            $this->repository->deleteCartItem($cartid);
+            \Log::info('Cart item deleted successfully: ', ['id' => $cartid]);
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Error deleting cart item: '. $e->getMessage());
+            throw $e;
+        }
+    }
 
 }

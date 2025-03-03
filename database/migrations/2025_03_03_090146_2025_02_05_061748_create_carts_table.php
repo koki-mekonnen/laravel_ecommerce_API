@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('carts', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('cart_id')->nullable();
-            $table->uuid('product_id'); // Fixed
-            $table->uuid('owner_id');   // Fixed
+            $table->uuid('product_id');
+            $table->uuid('owner_id');
+            $table->uuid('user_id');
+
             $table->uuid('category_id')->nullable();
             $table->string('category_name')->nullable();
             $table->string('category_type')->nullable();
@@ -37,6 +39,7 @@ return new class extends Migration
             // Foreign keys
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('owner_id')->references('id')->on('merchants')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
         });
     }
