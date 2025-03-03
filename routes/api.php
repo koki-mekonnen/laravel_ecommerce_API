@@ -6,6 +6,8 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\UserController;
+
 
 
 
@@ -20,14 +22,22 @@ use Illuminate\Support\Facades\Route;
 Route::controller(SuperAdminController::class)->group(function () {
 Route::post('/admin/register', 'register')->name('admin.register');
 
-Route::post('/admin/login', 'login')->name('admin.login'); // No token check here
+Route::post('/admin/login', 'login')->name('admin.login');
+
 
 });
 
 Route::controller(MerchantController::class)->group(function () {
 Route::post('/merchant/register', 'register')->name('merchant.register');
-Route::post('/merchant/login', 'login')->name('merchant.login'); // No token check here
+Route::post('/merchant/login', 'login')->name('merchant.login');
+
 Route::get('/merchant/all', 'index');
+
+});
+
+Route::controller(UserController::class)->group(function () {
+    Route::post('/user/register', 'register')->name('user.register');
+    Route::post('/user/login', 'login')->name('user.login');
 
 });
 
@@ -40,6 +50,8 @@ Route::get('/merchant/all', 'index');
     Route::put('/admin/update', [SuperAdminController::class, 'update'])->name('admin.update');
     Route::post('/admin/logout', [SuperAdminController::class, 'logout']);
     Route::delete('/admin/merchant/{merchantId}', [SuperAdminController::class, 'deleteMerchant'])->name('admin.merchantdelete');
+Route::get('/admin/users', [SuperAdminController::class, ''])->name('admin.merchantdelete');
+
 
 
 
@@ -65,9 +77,13 @@ Route::get('/merchant/product/producttype', [ProductController::class, 'getByPro
 Route::delete('/merchant/product/{productId}', [ProductController::class, 'delete'])->name('merchant.deleteproduct');
 
 
-});
+
+Route::get('/user', [UserController::class, 'user'])->name('user.getuser');
+Route::patch('/user/update', [UserController::class, 'update'])->name('user.updateuser');
+Route::post('/cart/add/{productid}', [CartController::class, 'addtocart'])->name('cart.addtocart');
+Route::get('/cart/items', [CartController::class, 'viewcart'])->name('cart.viewcart');
 
 
-Route::controller(CartController::class)->group(function () {
-    Route::post('/cart/add/{productid}','addtocart')->name('user.addtocart');
+
 });
+

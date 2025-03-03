@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('tinnumber');
             $table->string('role');
             $table->rememberToken();
-
             $table->timestamps();
 
         });

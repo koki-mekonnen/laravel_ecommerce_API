@@ -29,10 +29,11 @@ class CartService
     }
 
 
-    public function findCartItem($productid, $ownerid){
+    public function findCartItem($productid, $ownerid,$userid){
         try {
 
-            $cartItem = $this->repository->findCartItem($productid, $ownerid);
+$cartItem = $this->repository->findCartItem($productid, $ownerid, $userid);
+
             if (! $cartItem) {
                 return null;
             }
@@ -43,6 +44,19 @@ class CartService
         }
     }
 
+    public function getCartItems($userid){
+        try {
+
+            $cart = $this->repository->getCartItems($userid);
+            if (! $cart) {
+                return null;
+            }
+            return $cart;
+        } catch (\Exception $e) {
+            \Log::error('Error getting cart: '. $e->getMessage());
+            throw $e;
+        }
+    }
 
 
 
