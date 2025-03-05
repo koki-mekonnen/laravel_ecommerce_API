@@ -21,7 +21,7 @@ class MerchantService
 
         try {
             $data['password'] = Hash::make($data['password']);
-$data['role'] = 'merchant';
+            $data['role'] = 'merchant';
 
 
             $merchant = $this->repository->create($data);
