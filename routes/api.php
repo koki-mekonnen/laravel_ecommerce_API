@@ -8,6 +8,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\WebhookController;
+
 
 use Illuminate\Support\Facades\Route;
 
@@ -83,4 +85,6 @@ Route::post('/cart/pay', [PaymentController::class, 'initiatePaymnet'])->name('p
 
 
 });
+
+Route::post('/webhook/create', [WebhookController::class, 'handleWebhook'])->name('webhook.handleWebhook');
 
