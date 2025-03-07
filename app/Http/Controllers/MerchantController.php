@@ -61,12 +61,11 @@ class MerchantController extends Controller
     public function login(RegisterMerchantRequest $request)
     {
         try {
-            $validated = $request->validated();
 
+            $validated = $request->validated();
             $phone    = $validated['phone'];
             $password = $validated['password'];
             $role     = $validated['role'];
-
             $result = $this->merchantService->authenticateMerchant($phone, $password, $role);
 
             if (isset($result['error'])) {

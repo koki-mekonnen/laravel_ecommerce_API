@@ -15,7 +15,7 @@ class SuperAdminService
     public function __construct(SuperAdminRepository $repository)
     {
         $this->repository = $repository;
-$this->merchantRepository = new MerchantRepository();
+        $this->merchantRepository = new MerchantRepository();
 
 
 
