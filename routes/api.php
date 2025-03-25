@@ -45,7 +45,7 @@ Route::get('/admin/me ', [SuperAdminController::class, 'admin'])->name('admin.ad
 Route::put('/admin/update', [SuperAdminController::class, 'update'])->name('admin.update');
 Route::post('/admin/logout', [SuperAdminController::class, 'logout']);
 Route::delete('/admin/merchant/{merchantId}', [SuperAdminController::class, 'deleteMerchant'])->name('admin.merchantdelete');
-Route::get('/admin/users', [SuperAdminController::class, ''])->name('admin.merchantdelete');
+Route::get('/admin/users', [SuperAdminController::class, ''])->name('admin.users');
 
 
 
