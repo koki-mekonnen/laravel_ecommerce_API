@@ -63,10 +63,10 @@ class MerchantController extends Controller
         try {
 
             $validated = $request->validated();
-            $phone    = $validated['phone'];
-            $password = $validated['password'];
-            $role     = $validated['role'];
-            $result = $this->merchantService->authenticateMerchant($phone, $password, $role);
+            $phone     = $validated['phone'];
+            $password  = $validated['password'];
+            $role      = $validated['role'];
+            $result    = $this->merchantService->authenticateMerchant($phone, $password, $role);
 
             if (isset($result['error'])) {
                 return response()->json(['message' => $result['error']], $result['code']);
@@ -116,7 +116,7 @@ class MerchantController extends Controller
                 return response()->json(['message' => 'Merchant not found'], 404);
             }
 
-            \Log::info('Merchant successfully retrieved', ['id' => $merchant->id]);
+            \Log::info('Merchant successfully retrieved after token validation', ['id' => $merchant->id]);
 
             return response()->json([
                 'message' => 'Merchant retrieved successfully',

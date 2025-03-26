@@ -47,7 +47,6 @@ class SuperadminTest extends TestCase
             "lastname"  => "mekonnen2",
             "email"     => "selam@gmail.com",
             "phone"     => "251905126321",
-
             "password"  => bcrypt('password'),
             "role"      => "superadmin",
         ]);
