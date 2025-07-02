@@ -197,5 +197,56 @@ class UserController extends Controller
         }
     }
 
+
+  public function getMerchantsByCategoryName(Request $request)
+{
+    try {
+
+        $validatedData = $request->validate([
+        'category_name' => 'nullable|string|max:255' ]);
+
+        $categoryName =  $validatedData['category_name'];
+        $merchants = $this->userService->getMerchantsByCategoryName($categoryName);
+
+        if ($merchants->isEmpty()) {
+            return response()->json(['message' => 'No merchants found for this category'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Merchants retrieved successfully',
+            'data' => $merchants,
+        ], 200);
+
+    } catch (\Exception $e) {
+        \Log::error('Error retrieving merchants by category: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'An error occurred',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function getAllCategories()
+{
+    try {
+        $categories = $this->userService->getAllCategory();
+
+        if ($categories->isEmpty()) {
+            return response()->json(['message' => 'No categories found'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Categories retrieved successfully',
+            'data' => $categories,
+        ], 200);
+    } catch (\Exception $e) {
+        \Log::error('Error retrieving categories: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'An error occurred',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+
+}
 }
 

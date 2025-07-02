@@ -2,6 +2,9 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use App\Models\Category;
+use App\Models\Merchant;
+
 
 class UserRepository
 {
@@ -33,5 +36,20 @@ class UserRepository
     $user->update($data);
     return $user;
 }
+
+ public static function getMerchantsByCategoryName($categoryName)
+    {
+        $ownerIds = Category::where('category_name', $categoryName)
+                        ->pluck('owner_id')
+                        ->unique()
+                        ->toArray();
+
+        return Merchant::whereIn('id', $ownerIds)->get();
+    }
+
+    public function allCategories()
+    {
+        return Category::all();
+    }
 
 }

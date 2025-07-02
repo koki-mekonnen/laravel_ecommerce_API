@@ -128,4 +128,30 @@ class UserService
             \Log::error('Error invalidating token: ' . $e->getMessage());
         }
     }
+
+
+     public  function getMerchantsByCategoryName($categoryName)
+     {
+        try {
+
+            $merchants = $this->repository->getMerchantsByCategoryName($categoryName);
+
+            return $merchants;
+
+        } catch (\Exception $e) {
+            \Log::error('Error invalidating token: ' . $e->getMessage());
+        }
+
+     }
+
+
+     public function getAllCategory()
+     {
+         try {
+             return $this->repository->allCategories();
+         } catch (\Exception $e) {
+             \Log::error('Error fetching all categories: ' . $e->getMessage());
+             throw $e;
+         }
+     }
 }

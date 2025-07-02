@@ -37,6 +37,12 @@ class Category extends Authenticatable implements JWTSubject
 
     public $timestamps = true;
 
+     // Relationship to Merchant (owner)
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class, 'owner_id', 'id');
+    }
+
     // Automatically generate UUIDs for new records
     protected static function boot()
     {
