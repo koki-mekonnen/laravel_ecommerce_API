@@ -31,13 +31,7 @@ class CategoryRepository
         return Category::all();
     }
 
-// public function getByCategoryType($categorytype, $merchantId)
-// {
-//     return Category::where('category_type', $categorytype)
-//         ->where('owner_id', $merchantId)
-//         ->get();
 
-// }
 
     public function getByCategoryType($categorytype, $merchantId)
     {

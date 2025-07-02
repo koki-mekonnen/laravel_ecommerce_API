@@ -30,9 +30,12 @@ Route::get('/merchant/all', 'index');
 
 });
 
+// user route without authentication
 Route::controller(UserController::class)->group(function () {
 Route::post('/user/register', 'register')->name('user.register');
 Route::post('/user/login', 'login')->name('user.login');
+Route::post('/user/merchants', 'getMerchantsByCategoryName')->name('user.getmerchantsbycategoryname');
+Route::get('/user/categories', 'getAllCategories')->name('user.getallcategories');
 
 });
 
@@ -80,6 +83,7 @@ Route::get('/cart/items', [CartController::class, 'viewcart'])->name('cart.viewc
 Route::patch('/cart/update/{productid}/{cartid}', [CartController::class, 'updatecart'])->name('cart.updatecart');
 Route::delete('/cart/remove/{productid}/{cartid}', [CartController::class, 'removefromcart'])->name('cart.removefromcart');
 Route::post('/cart/pay', [PaymentController::class, 'initiatePaymnet'])->name('pay.initiatePaymnet');
+
 
 
 
