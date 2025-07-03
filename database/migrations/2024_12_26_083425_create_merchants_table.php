@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('firstname');
             $table->string('lastname');
+           
             $table->string('phone')->unique();
             $table->string('email')->unique();
             $table->string('password');

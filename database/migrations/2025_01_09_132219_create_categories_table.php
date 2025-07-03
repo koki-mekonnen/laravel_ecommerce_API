@@ -12,16 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
-            $table->uuid('id')->primary(); // Define the primary key as UUID
+            $table->uuid('id')->primary();
             $table->string('category_name')->index();
-            $table->string('category_type')->unique()->index();
-            $table->uuid('owner_id');   // Add the owner_id column
-            $table->foreign('owner_id') // Add the foreign key constraint
+            $table->string('category_type')->index();
+            $table->uuid('owner_id');
+            $table->foreign('owner_id')
                 ->references('id')
                 ->on('merchants')
                 ->onDelete('cascade');
             $table->timestamps();
-
             $table->unique(['category_type', 'owner_id'], 'unique_category_type_per_owner');
 
         });

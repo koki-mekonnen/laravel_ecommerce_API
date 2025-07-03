@@ -20,6 +20,8 @@ class RegisterMerchantRequest extends FormRequest
                 'phone' => 'required|string|max:13|unique:merchants,phone',
                 'email' => 'nullable|string|email',
                 'password' => 'required|string|min:6',
+                'shopname' => 'required|string|max:255',
+                'logo'=> 'nullable|string|max:255',
                 'license' => 'required|string|max:255',
                 'tinnumber' => 'required|string|max:255',
                 'role' => 'nullable|string',
