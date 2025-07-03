@@ -23,6 +23,8 @@ class Merchant extends Authenticatable implements JWTSubject
     protected $fillable = [
         'firstname',
         'lastname',
+        'shopname',
+        'logo',
         'phone',
         'email',
         'password',
@@ -32,7 +34,7 @@ class Merchant extends Authenticatable implements JWTSubject
     ];
 
 
-    
+
 
     protected $hidden = [
         'password',
