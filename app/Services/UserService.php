@@ -154,4 +154,15 @@ class UserService
              throw $e;
          }
      }
+
+     public function getProducts($categoryName, $ownerId){
+            try {
+                return $this->repository->getProductsByCategoryName($categoryName, $ownerId);
+            } catch (\Exception $e) {
+                \Log::error('Error fetching products: ' . $e->getMessage());
+                throw $e;
+            }
+        }
+
+        
 }

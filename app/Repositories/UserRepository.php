@@ -4,6 +4,7 @@ namespace App\Repositories;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Merchant;
+use App\Models\Product;
 
 
 class UserRepository
@@ -51,5 +52,15 @@ class UserRepository
     {
         return Category::all();
     }
+
+
+    public function getProductsByCategoryName($categoryName, $ownerId){
+        return Product::where('category_name', $categoryName)
+            ->where('owner_id', $ownerId)
+            ->get();
+    }
+
+   
+
 
 }
