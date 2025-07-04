@@ -60,7 +60,12 @@ class UserRepository
             ->get();
     }
 
-   
+     public function getCategoryTypes($categoryName, $ownerId){
+        return Category::where('category_name', $categoryName)
+            ->where('owner_id', $ownerId)
+            ->get();
+    }
+
 
 
 }

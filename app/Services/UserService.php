@@ -164,5 +164,13 @@ class UserService
             }
         }
 
-        
+        public function getCategoryTypes($categoryName, $ownerId){
+                try {
+                    return $this->repository->getCategoryTypes($categoryName, $ownerId);
+                } catch (\Exception $e) {
+                    \Log::error('Error fetching category types: ' . $e->getMessage());
+                    throw $e;
+                }
+            }
+
 }
