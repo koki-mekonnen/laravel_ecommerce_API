@@ -248,5 +248,77 @@ public function getAllCategories()
     }
 
 }
+
+
+public function getProducts(Request $request){
+    try {
+         $categoryName = $request->query('category_name');
+         if (!$categoryName) {
+                \Log::error('Category name not provided');
+                return response()->json(['message' => 'Category name not provided'], 400);
+            }
+
+             $ownerId = $request->query('owner_id');
+
+            if (!$ownerId) {
+                \Log::error('ownerid  not provided');
+                return response()->json(['message' => 'Owner id  not provided'], 400);
+            }
+        $products = $this->userService->getProducts($categoryName, $ownerId);
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'No products found'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Products retrieved successfully',
+            'data' => $products,
+        ], 200);
+
+
+    } catch (\Exception $e) {
+        \Log::error('Error retrieving categories: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'An error occurred',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function getCategoryTypes(Request $request){
+    try {
+         $categoryName = $request->query('category_name');
+         if (!$categoryName) {
+                \Log::error('Category name not provided');
+                return response()->json(['message' => 'Category name not provided'], 400);
+            }
+
+             $ownerId = $request->query('owner_id');
+
+            if (!$ownerId) {
+                \Log::error('ownerid  not provided');
+                return response()->json(['message' => 'Owner id  not provided'], 400);
+            }
+        $categorytypes = $this->userService->getCategoryTypes($categoryName, $ownerId);
+
+        if ($categorytypes->isEmpty()) {
+            return response()->json(['message' => 'No category types found'], 404);
+        }
+
+        return response()->json([
+            'message' => 'category types retrieved successfully',
+            'data' => $categorytypes,
+        ], 200);
+
+
+    } catch (\Exception $e) {
+        \Log::error('Error retrieving categories: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'An error occurred',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
 }
 

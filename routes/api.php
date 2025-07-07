@@ -36,6 +36,8 @@ Route::post('/user/register', 'register')->name('user.register');
 Route::post('/user/login', 'login')->name('user.login');
 Route::post('/user/merchants', 'getMerchantsByCategoryName')->name('user.getmerchantsbycategoryname');
 Route::get('/user/categories', 'getAllCategories')->name('user.getallcategories');
+Route::get('/user/products', 'getProducts')->name('user.getproducts');
+Route::get('/user/categorytype', 'getCategoryTypes')->name('user.getCategorytypes');
 
 });
 
